@@ -13,11 +13,11 @@
     telnet localhost 50000
 
     実行結果:
-    Client is accepted [pid = 64825, thread_id = 0]
-    Client is accepted [pid = 64826, thread_id = 1]
-    Client is accepted [pid = 64827, thread_id = 2]
-    Client is accepted [pid = 64828, thread_id = 3]
-    Client is accepted [pid = 64829, thread_id = 4]
+    Client is accepted [pid = 84610, thread_id = 0]
+    Client is accepted [pid = 84611, thread_id = 0]
+    Client is accepted [pid = 84612, thread_id = 0]
+    Client is accepted [pid = 84613, thread_id = 0]
+    Client is accepted [pid = 84614, thread_id = 0]
 
     --- 実行例２ (スレッド) ---
 
@@ -34,12 +34,35 @@
     Client is accepted [pid = 72423, thread_id = 3]
     Client is accepted [pid = 72423, thread_id = 4]
 
+    --- 実行例3 (argument error) ---
+
+    サーバーコマンド:
+    ./task3
+
+    実行結果:
+    Usage: ./task3 <port_number> <parallel_type> <connection_limit>
+
+    Options:
+    <port_number>       Specifies the port number the server will listen on.
+                        This should be a value between 1024 and 65535.
+    <parallel_type>     Indicates the type of parallel processing to use:
+                        0 - Process-based parallelism (using fork)
+                        1 - Thread-based parallelism (using pthreads)
+    <connection_limit>  The maximum number of concurrent connections
+                        that the server will handle at one time.
+
+    Example:
+    ./task3 8080 1 5     # Starts the server on port 8080 with thread-based parallelism
+                        # and suggested to test between 5~10 concurrent connections.
+
 */
 
 #include "mynet.h"
 #include <sys/wait.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #define BUFSIZE 50
 
@@ -48,17 +71,19 @@ struct thread_args {
     int thread_id;
 };
 
-void echo(int sock_listen, int thread_id);
+void echo(int sock_listen);
 void *echo_thread(void *arg);
 void clean_exit(char *message);
 void signal_handler(int sig);
 void print_usage(char *program_name);
 
+int sock_listen;
+int thread_id = 0;
+
 int main(int argc, char *argv[]) {
     int port_number;
     int parallel_type;
     int connection_limit;
-    int sock_listen;
     pid_t child;
     struct thread_args *args;
     pthread_t tid;
@@ -85,13 +110,15 @@ int main(int argc, char *argv[]) {
             child = fork();
             if (child < 0) {
                 clean_exit("Fork failed");
-                continue;
             } else if (child == 0) {
-                echo(sock_listen, i);
-                close(sock_listen);
+                // Child process
+                echo(sock_listen);
                 exit(EXIT_SUCCESS);
             }
         }
+        // Parent process
+        close(sock_listen);
+        while (wait(NULL) > 0);
     } else if (parallel_type == 1) {
         for (i = 0; i < connection_limit; i++) {
             args = (struct thread_args *) malloc(sizeof(struct thread_args));
@@ -104,11 +131,9 @@ int main(int argc, char *argv[]) {
             if (pthread_create(&tid, NULL, echo_thread, (void *) args) != 0) {
                 clean_exit("Thread creation failed");
             }
-            pthread_detach(tid);
         }
+        pthread_exit(NULL);
     }
-
-    for (;;) pause();
 
     return 0;
 }
@@ -116,32 +141,34 @@ int main(int argc, char *argv[]) {
 void *echo_thread(void *arg) {
     struct thread_args *args = (struct thread_args *) arg;
     int sock_listen = args->sock;
-    int thread_id = args->thread_id;
     free(arg);
 
-    echo(sock_listen, thread_id);
+    pthread_detach(pthread_self());
+
+    echo(sock_listen);
 
     return NULL;
 }
 
-void echo(int sock_listen, int thread_id) {
+void echo(int sock_listen) {
     int sock_accepted;
     char buf[BUFSIZE];
     int strsize;
+    int this_thread_id = thread_id++;
 
-    while (1) {
+    for (;;) {
         sock_accepted = accept(sock_listen, NULL, NULL);
         if (sock_accepted < 0) {
             perror("Accept failed");
             continue;
         }
-        printf("Client is accepted [pid = %d, thread_id = %d]\n", getpid(), thread_id);
+        printf("Client is accepted [pid = %d, thread_id = %d]\n", getpid(), this_thread_id);
         do {
-            strsize = recv(sock_accepted, buf, BUFSIZE, 0);
-            if (strsize == -1) {
+            if ((strsize = recv(sock_accepted, buf, BUFSIZE, 0)) == -1) {
                 perror("Receive failed");
                 break;
             }
+
             if (send(sock_accepted, buf, strsize, 0) == -1) {
                 perror("Send failed");
                 break;
@@ -165,8 +192,6 @@ void print_usage(char *program_name) {
                 "  %s 8080 1 5     # Starts the server on port 8080 with thread-based parallelism\n"
                 "                       # and suggested to test between 5~10 concurrent connections.\n\n",
                 program_name, program_name);
-
-
 }
 
 void clean_exit(char *message) {
@@ -176,5 +201,11 @@ void clean_exit(char *message) {
 
 void signal_handler(int sig) {
     printf("Received signal %d, shutting down...\n", sig);
+    close(sock_listen);
     exit(EXIT_SUCCESS);
 }
+
+
+
+
+
