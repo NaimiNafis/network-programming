@@ -1,5 +1,15 @@
 {
     "files.associations": {
-        "mynet.h": "c"
+        "mynet.h": "c",
+        "quiz.h": "c",
+        "stdlib.h": "c",
+        "wait.h": "c",
+        "pthread.h": "c",
+        "signal.h": "c",
+        "socket.h": "c",
+        "select.h": "c",
+        "types.h": "c",
+        "inet.h": "c",
+        "errno.h": "c"
     }
 }

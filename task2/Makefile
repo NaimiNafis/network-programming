@@ -1,17 +1,12 @@
-#
-# Makefile for libmynet
-#
-OBJS = init_tcpserver.o init_tcpclient.o other.o
-AR = ar -qc
+MYLIBDIR=../mynet
+MYLIB=-lmynet
+CFLAGS=-I${MYLIBDIR} -L${MYLIBDIR}
+OBJS=task2.o
 
-libmynet.a : ${OBJS}
-	${RM} $@
-	${AR} $@ ${OBJS}
+all: task2
 
-${OBJS}: mynet.h
-
-task2 : task2.c libmynet.a
-	gcc task2.c libmynet.a -o $@
+task2: ${OBJS}
+	${CC} ${CFLAGS} -o $@ $^ ${MYLIB}
 
 clean:
-	${RM} *.o
+	${RM} *.o task2 *~

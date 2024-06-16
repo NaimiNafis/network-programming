@@ -1,8 +1,8 @@
 /*
 
     --- コンパイルコマンド ---
-    gcc task2.c libmynet.a -o task2
-
+    gcc -I../mynet -L../mynet -o task2 task2.o -lmynet
+    または、makefileを使用して make コマンドによるコンパイル
 
     --- 実行例１ ---
 

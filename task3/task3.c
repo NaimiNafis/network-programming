@@ -1,8 +1,8 @@
 /*
 
     --- コンパイルコマンド ---
-    gcc task3.c libmynet.a -o task3
-
+    gcc -I../mynet -L../mynet -o task3 task3.o -lmynet
+    または、makefileを使用して make コマンドによるコンパイル
 
     --- 実行例１(fork) ---
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     parallel_type = atoi(argv[2]);
     connection_limit = atoi(argv[3]);
 
-    sock_listen = init_tcpserver(port_number, 5);
+    sock_listen = init_tcpserver(port_number,5 );
     if (sock_listen < 0) {
         clean_exit("Failed to initialize TCP server");
     }
