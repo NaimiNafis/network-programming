@@ -1,3 +1,7 @@
+/*
+  init_tcpclient.c
+*/
+
 #include "mynet.h"
 
 int init_tcpclient(char *servername, in_port_t serverport)

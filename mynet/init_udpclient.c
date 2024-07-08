@@ -1,7 +1,10 @@
+/*
+  init_udpclient.c
+*/
+
 #include "mynet.h"
 
-int init_udpclient()
-{
+int init_udpclient() {
     int sock;
 
     /* ソケットをDGRAMモードで作成する */
@@ -9,11 +12,18 @@ int init_udpclient()
         exit_errmesg("socket()");
     }
 
-    return (sock);
+    return sock;
 }
 
-void set_sockaddr_in(struct sockaddr_in *server_adrs, char *servername, in_port_t port_number)
-{
+void set_sockaddr_in_broadcast(struct sockaddr_in *server_adrs, in_port_t port_number) {
+    /* ブロードキャストアドレスの情報をsockaddr_in構造体に格納する */
+    memset(server_adrs, 0, sizeof(struct sockaddr_in));
+    server_adrs->sin_family = AF_INET;
+    server_adrs->sin_port = htons(port_number);
+    server_adrs->sin_addr.s_addr = htonl(INADDR_BROADCAST);
+}
+
+void set_sockaddr_in(struct sockaddr_in *server_adrs, char *servername, in_port_t port_number) {
     struct hostent *server_host;
 
     /* サーバ名をアドレス(hostent構造体)に変換する */

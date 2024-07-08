@@ -1,3 +1,7 @@
+/*
+  init_tcpserver.c
+*/
+
 #include "mynet.h"
 
 int init_tcpserver(in_port_t myport, int backlog)
@@ -12,22 +16,19 @@ int init_tcpserver(in_port_t myport, int backlog)
   my_adrs.sin_addr.s_addr = htonl(INADDR_ANY);
 
   /* 待ち受け用ソケットをSTREAMモードで作成する */
-  if ((sock_listen = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-      exit_errmesg("socket()");
+  if((sock_listen = socket(PF_INET, SOCK_STREAM, 0)) == -1){
+    exit_errmesg("socket()");
   }
 
-  int opt = 1;
-  setsockopt(sock_listen, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
   /* 待ち受け用のソケットに自分自身のアドレス情報を結びつける */
-  if (bind(sock_listen, (struct sockaddr *) &my_adrs, sizeof(my_adrs)) == -1) {
-      exit_errmesg("bind()");
+  if(bind(sock_listen, (struct sockaddr *)&my_adrs, sizeof(my_adrs)) == -1 ){
+    exit_errmesg("bind()");
   }
 
   /* クライアントからの接続を受け付ける準備をする */
-  if (listen(sock_listen, backlog) == -1) {
-      exit_errmesg("listen()");
+  if(listen(sock_listen, backlog) == -1){
+    exit_errmesg("listen()");
   }
 
-  return (sock_listen);
+  return(sock_listen);
 }
