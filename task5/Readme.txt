@@ -2,24 +2,19 @@
 
 コンパイルコマンド:
 ```
-gcc -I../mynet -L../mynet -o task5_server task5_server.c -lmynet
-gcc -I../mynet -L../mynet -o task5_client task5_client.c -lmynet
+gcc -I../mynet -L../mynet -o task5 task5.c -lmynet -lpthread
 ```
 
-サーバーコマンド:
+コマンド:
 ```
-./task5_server [port_number]
-```
-
-クライアントコマンド:
-```
-./task5_client
+./task5 [username] [port_number]
 ```
 
 テストコマンド:
 ```
 ./idobata_test_mac
 ```
+
 --------------------------------------------------
 
 プログラムの特徴:

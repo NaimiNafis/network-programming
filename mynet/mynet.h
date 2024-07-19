@@ -10,6 +10,9 @@
 #include <netdb.h>
 #include <unistd.h>
 
+int broadcast_helo(int udp_sock, struct sockaddr_in *broadcast_adrs, char *server_ip, size_t server_ip_size);
+void handle_client(int tcp_sock, char *username);
+
 // Function declarations for TCP server and client
 int init_tcpserver(in_port_t myport, int backlog);
 int init_tcpclient(char *servername, in_port_t serverport);
